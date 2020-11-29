@@ -28,7 +28,18 @@
 ### Eager Loading
 - [Constraining Eager Loads](#constraining-eager-loads)
 - [Lazy Eager Loading](#lazy-eager-loading)
-
+### Inserting & Updating Related Models
+-[The save Method](#the-save-method)
+	----[Recursively Saving Models & Relationships](#recursively-saving-models-&-relationships)
+-[The create Method](#the-create-method)
+-[Belongs To Relationships](#belongs-to-relationships)
+	----[Default Models](#default-models)
+-[Many To Many Relationships](#many-to-many-relationships)
+	----[Attaching / Detaching](#attaching-/-detaching)
+	----[Syncing Associations](#syncing-associations)
+	----[Toggling Associations](#toggling-associations)
+	----[Saving Additional Data On A Pivot Table](#saving-additional-data-on-a-pivot-table)
+	----[Updating A Record On A Pivot Table](#)
 
 ## One To One
 ![enter image description here](https://lh3.googleusercontent.com/JLHkNDXt8DOmmR9wnVobtD4x3SnbACaoJ7_-2C-2psLiq8ezkx-piQAyPPRUq-9DLKa5a4yPVZwNEvNKhQFPgJJFiAZel6v8_sCHRL3lGPLqoF8ikGP_8AS3pxFqFzWE1uaBV7hrMJmsSLLYwADDOD0BdF8je5IUiIVvOYSCTJQYrqctqaSd5h_6Vm-dqgfq1cA1IGyvYz4p07bMBb-vnSXeErfQEK3iG6olvagGQkzSSs0o110MYcFtOuhDqv0wQCuG0QtcFKVtQ7buvCQ8NeU0shm9bXk76ICoJdOVMCWVei0RWkWf7guyt0e20EgjH_2z1YtBE-IaOoK7N5KZZCSfeXQOha_Zckj-19Ie2c_7Kog7twRpGFO6d3xmzdNXcklzUxjKO2Np2MY2F_LHRNmwbEqTPY_ASgmS_U4uIz8qgIKBBg_Kx0eHX1gU-hukLKd62xbiAD3JGVUGC3Wnregcy8oLwWbhJwY100q2UuSsXs3Jb1oSJcVzhxR1oZlyQUBkzP7B-ayc7sEuAgjriIp1obSFqSkdlTdHLzbXCFVVDsBA9tOb_gR-H_yD-aUcoYuljOygCN8xfD2WYSqde03DR5PgCR7SbeHdqu0g5oTCCX5QJ9_mcJ2mT9bGZvWPoZqydhoVs6dfCBmfXExbhgdLGtNkC9j7Mn7ZaNe7I5kc1K8cJ0kwEvVAgnfT=w328-h270-no?authuser=0)
@@ -913,6 +924,203 @@ $activities = ActivityFeed::with('parentable')
         Post::class => ['author'],
     ]);
 ```
+## Inserting & Updating Related Models
+### The Save Method
+```php
+$comment = new App\Models\Comment(['message' => 'A new comment.']);
+$post = App\Models\Post::find(1);
+$post->comments()->save($comment);
+```
+```php
+$post = App\Models\Post::find(1);
+$post->comments()->saveMany([
+    new App\Models\Comment(['message' => 'A new comment.']),
+    new App\Models\Comment(['message' => 'Another comment.']),
+]);
+```
+The `save` and `saveMany` methods will not add the new models to any in-memory relationships that are already loaded onto the parent model. If you plan on accessing the relationship after using the `save` or `saveMany` methods, you may wish to use the `refresh` method to reload the model and its relationships:
+```php
+$post->comments()->save($comment);
+$post->refresh();
+// All comments, including the newly saved comment...
+$post->comments;
+```
+##### Recursively Saving Models & Relationships
+If you would like to  `save`  your model and all of its associated relationships, you may use the  `push`  method:
+
+```php
+$post = App\Models\Post::find(1);
+
+$post->comments[0]->message = 'Message';
+$post->comments[0]->author->name = 'Author Name';
+
+$post->push();
+```
+### The Create Method
+```php
+$post = App\Models\Post::find(1);
+$comment = $post->comments()->create([
+    'message' => 'A new comment.',
+]);
+```
+In addition to the  `save`  and  `saveMany`  methods, you may also use the  `create`  method, which accepts an array of attributes, creates a model, and inserts it into the database. Again, the difference between  `save`  and  `create`  is that  `save`  accepts a full Eloquent model instance while  `create`  accepts a plain PHP  `array`:
+```php
+$post = App\Models\Post::find(1);
+$comment = $post->comments()->create([
+    'message' => 'A new comment.',
+]);
+```
+```php
+$post = App\Models\Post::find(1);
+$post->comments()->createMany([
+    [
+        'message' => 'A new comment.',
+    ],
+    [
+        'message' => 'Another new comment.',
+    ],
+]);
+```
+You may also use the `findOrNew`, `firstOrNew`, `firstOrCreate` and `updateOrCreate` methods to [create and update models on relationships](https://laravel.com/docs/8.x/eloquent#other-creation-methods).
+
+### Belongs To Relationships
+When updating a belongsTo relationship, you may use the associate method. This method will set the foreign key on the child model:
+```php
+$account = App\Models\Account::find(10);
+$user->account()->associate($account);
+$user->save();
+```
+When removing a  `belongsTo`  relationship, you may use the  `dissociate`  method. This method will set the relationship's foreign key to  `null`:
+
+```php
+$user->account()->dissociate();
+
+$user->save();
+```
+##### Default Models
+The  `belongsTo`,  `hasOne`,  `hasOneThrough`, and  `morphOne`  relationships allow you to define a default model that will be returned if the given relationship is  `null`. This pattern is often referred to as the  [Null Object pattern](https://en.wikipedia.org/wiki/Null_Object_pattern)  and can help remove conditional checks in your code. In the following example, the  `user`  relation will return an empty  `App\Models\User`  model if no  `user`  is attached to the post:
+
+```php
+/**
+ * Get the author of the post.
+ */
+public function user()
+{
+    return $this->belongsTo('App\Models\User')->withDefault();
+}
+```
+
+To populate the default model with attributes, you may pass an array or Closure to the  `withDefault`  method:
+
+```php
+/**
+ * Get the author of the post.
+ */
+public function user()
+{
+    return $this->belongsTo('App\Models\User')->withDefault([
+        'name' => 'Guest Author',
+    ]);
+}
+
+/**
+ * Get the author of the post.
+ */
+public function user()
+{
+    return $this->belongsTo('App\Models\User')->withDefault(function ($user, $post) {
+        $user->name = 'Guest Author';
+    });
+}
+```
+
+## Many To Many Relationships
+### Attaching / Detaching
+
+Eloquent also provides a few additional helper methods to make working with related models more convenient. For example, let's imagine a user can have many roles and a role can have many users. To attach a role to a user by inserting a record in the intermediate table that joins the models, use the  `attach`  method:
+
+```php
+$user = App\Models\User::find(1);
+
+$user->roles()->attach($roleId);
+```
+
+When attaching a relationship to a model, you may also pass an array of additional data to be inserted into the intermediate table:
+
+```php
+$user->roles()->attach($roleId, ['expires' => $expires]);
+```
+
+Sometimes it may be necessary to remove a role from a user. To remove a many-to-many relationship record, use the  `detach`  method. The  `detach`  method will delete the appropriate record out of the intermediate table; however, both models will remain in the database:
+
+```php
+// Detach a single role from the user...
+$user->roles()->detach($roleId);
+
+// Detach all roles from the user...
+$user->roles()->detach();
+```
+
+For convenience,  `attach`  and  `detach`  also accept arrays of IDs as input:
+
+```php
+$user = App\Models\User::find(1);
+
+$user->roles()->detach([1, 2, 3]);
+
+$user->roles()->attach([
+    1 => ['expires' => $expires],
+    2 => ['expires' => $expires],
+]);
+```
+
+### Syncing Associations
+
+You may also use the  `sync`  method to construct many-to-many associations. The  `sync`  method accepts an array of IDs to place on the intermediate table. Any IDs that are not in the given array will be removed from the intermediate table. So, after this operation is complete, only the IDs in the given array will exist in the intermediate table:
+
+```php
+$user->roles()->sync([1, 2, 3]);
+```
+
+You may also pass additional intermediate table values with the IDs:
+
+```php
+$user->roles()->sync([1 => ['expires' => true], 2, 3]);
+```
+
+If you do not want to detach existing IDs, you may use the  `syncWithoutDetaching`  method:
+
+```php
+$user->roles()->syncWithoutDetaching([1, 2, 3]);
+```
+
+### Toggling Associations
+
+The many-to-many relationship also provides a  `toggle`  method which "toggles" the attachment status of the given IDs. If the given ID is currently attached, it will be detached. Likewise, if it is currently detached, it will be attached:
+
+```php
+$user->roles()->toggle([1, 2, 3]);
+```
+
+### Saving Additional Data On A Pivot Table
+
+When working with a many-to-many relationship, the  `save`  method accepts an array of additional intermediate table attributes as its second argument:
+
+```php
+App\Models\User::find(1)->roles()->save($role, ['expires' => $expires]);
+```
+
+### Updating A Record On A Pivot Table
+
+If you need to update an existing row in your pivot table, you may use  `updateExistingPivot`  method. This method accepts the pivot record foreign key and an array of attributes to update:
+
+```php
+$user = App\Models\User::find(1);
+
+$user->roles()->updateExistingPivot($roleId, $attributes);
+```
+
+
 
 
 # Class Curriculum - laraveldaily (26 Dec 2018)
