@@ -1,3 +1,9 @@
+
+### Defining Relationship
+    - [Artisan Command make:model with (hidden) options](#artisan-command-makemodel-with-hidden-options) 
+
+
+
 # Class Curriculum - laraveldaily (26 Dec 2018)
 
 ## Eloquent Model Options and Settings
