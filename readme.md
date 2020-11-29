@@ -35,7 +35,7 @@
 -[Belongs To Relationships](#belongs-to-relationships)
     -Default Models](#default-models)
 -[Many To Many Relationships](#many-to-many-relationships)
-    -[Attaching / Detaching](#attaching-/-detaching)
+    -[Attaching / Detaching](#attaching-detaching)
 	-[Syncing Associations](#syncing-associations)
 	-[Toggling Associations](#toggling-associations)
 	-[Saving Additional Data On A Pivot Table](#saving-additional-data-on-a-pivot-table)
