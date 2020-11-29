@@ -30,16 +30,16 @@
 - [Lazy Eager Loading](#lazy-eager-loading)
 ### Inserting & Updating Related Models
 -[The save Method](#the-save-method)
-	----[Recursively Saving Models & Relationships](#recursively-saving-models-&-relationships)
+-[Recursively Saving Models & Relationships](#recursively-saving-models-&-relationships)
 -[The create Method](#the-create-method)
 -[Belongs To Relationships](#belongs-to-relationships)
-	----[Default Models](#default-models)
+    -Default Models](#default-models)
 -[Many To Many Relationships](#many-to-many-relationships)
-	----[Attaching / Detaching](#attaching-/-detaching)
-	----[Syncing Associations](#syncing-associations)
-	----[Toggling Associations](#toggling-associations)
-	----[Saving Additional Data On A Pivot Table](#saving-additional-data-on-a-pivot-table)
-	----[Updating A Record On A Pivot Table](#)
+    -[Attaching / Detaching](#attaching-/-detaching)
+	-[Syncing Associations](#syncing-associations)
+	-[Toggling Associations](#toggling-associations)
+	-[Saving Additional Data On A Pivot Table](#saving-additional-data-on-a-pivot-table)
+	-[Updating A Record On A Pivot Table](#updating-a-record-on-a-pivot-table)
 
 ## One To One
 ![enter image description here](https://lh3.googleusercontent.com/JLHkNDXt8DOmmR9wnVobtD4x3SnbACaoJ7_-2C-2psLiq8ezkx-piQAyPPRUq-9DLKa5a4yPVZwNEvNKhQFPgJJFiAZel6v8_sCHRL3lGPLqoF8ikGP_8AS3pxFqFzWE1uaBV7hrMJmsSLLYwADDOD0BdF8je5IUiIVvOYSCTJQYrqctqaSd5h_6Vm-dqgfq1cA1IGyvYz4p07bMBb-vnSXeErfQEK3iG6olvagGQkzSSs0o110MYcFtOuhDqv0wQCuG0QtcFKVtQ7buvCQ8NeU0shm9bXk76ICoJdOVMCWVei0RWkWf7guyt0e20EgjH_2z1YtBE-IaOoK7N5KZZCSfeXQOha_Zckj-19Ie2c_7Kog7twRpGFO6d3xmzdNXcklzUxjKO2Np2MY2F_LHRNmwbEqTPY_ASgmS_U4uIz8qgIKBBg_Kx0eHX1gU-hukLKd62xbiAD3JGVUGC3Wnregcy8oLwWbhJwY100q2UuSsXs3Jb1oSJcVzhxR1oZlyQUBkzP7B-ayc7sEuAgjriIp1obSFqSkdlTdHLzbXCFVVDsBA9tOb_gR-H_yD-aUcoYuljOygCN8xfD2WYSqde03DR5PgCR7SbeHdqu0g5oTCCX5QJ9_mcJ2mT9bGZvWPoZqydhoVs6dfCBmfXExbhgdLGtNkC9j7Mn7ZaNe7I5kc1K8cJ0kwEvVAgnfT=w328-h270-no?authuser=0)
